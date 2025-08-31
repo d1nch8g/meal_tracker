@@ -26,7 +26,7 @@ class _LogoutButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(onPressed: context.read<DIManager>().logout, child: Text('Выйти'));
+    return ElevatedButton(onPressed: context.read<DIManager>().exit, child: Text('Выйти'));
   }
 }
 

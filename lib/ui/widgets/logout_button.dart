@@ -7,6 +7,7 @@ class LogoutButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(icon: Icon(Icons.logout), onPressed: () => context.read<DIManager>().logout());
+    return IconButton(icon: Icon(Icons.logout), onPressed: () => context.read<DIManager>().exit()
+    );
   }
 }
