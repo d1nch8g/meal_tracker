@@ -22,7 +22,12 @@ class AppNameApp extends StatelessWidget {
       builder: (context, child) {
         final isAuthorized = context.select((DIManager diManager) => diManager.isAuthorized);
         final defaultRoute = isAuthorized ? const HomeView() : const AuthView();
-        return MaterialApp(theme: ThemeData.dark(useMaterial3: true), debugShowCheckedModeBanner: false, home: defaultRoute);
+        return MaterialApp(
+          navigatorKey: DIManager.navigatorKey,
+          theme: ThemeData.dark(useMaterial3: true),
+          debugShowCheckedModeBanner: false,
+          home: defaultRoute,
+        );
       },
     );
   }

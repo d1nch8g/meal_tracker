@@ -5,8 +5,12 @@ import 'package:meal_tracker/repo/remote/error_helper/error_helper.dart';
 import 'package:meal_tracker/repo/remote/extends/mock_auth_extend.dart';
 import 'package:meal_tracker/repo/remote/rest_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:meal_tracker/ui/screens/auth/auth_view.dart';
+import 'package:meal_tracker/ui/screens/home/home_view.dart';
 
 class DIManager with ChangeNotifier {
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
   final LocalRepository _localRepository;
   final RestRepository _remoteRepository;
 
@@ -28,9 +32,9 @@ class DIManager with ChangeNotifier {
     final authorizedUser = await _localRepository.getAuthorizedUser();
     if (authorizedUser != null) {
       _handleAutrorizeUser(authorizedUser);
-      router.replaceAll(HomeRoute());
+      _navigateToHome();
     } else {
-      router.replaceAll(AuthRoute());
+      _navigateToAuth();
     }
   }
 
@@ -47,11 +51,25 @@ class DIManager with ChangeNotifier {
     notifyListeners();
   }
 
+  void _navigateToHome() {
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const HomeView()), (route) => false);
+    }
+  }
+
+  void _navigateToAuth() {
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const AuthView()), (route) => false);
+    }
+  }
+
   Future<void> _logoutFlow() async {
     await _localRepository.saveAuthorizedUser(null);
     _authorizedUser = null;
     notifyListeners();
-    router.replaceAll(AuthRoute());
+    _navigateToAuth();
   }
 
   Future<void> _authorizeFlow(String login, String password) async {
@@ -63,6 +81,6 @@ class DIManager with ChangeNotifier {
     _authorizedUser = user;
     notifyListeners();
     await _localRepository.saveAuthorizedUser(user);
-    router.replaceAll(HomeRoute());
+    _navigateToHome();
   }
 }
