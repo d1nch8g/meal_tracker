@@ -1,53 +1,45 @@
+import 'package:meal_tracker/configuration/model/environment_model.dart';
+import 'package:meal_tracker/di/main_provider.dart';
+import 'package:meal_tracker/repo/local/local_repository.dart';
+import 'package:meal_tracker/repo/remote/rest_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:meal_tracker/ui/screens/auth/auth_view.dart';
+import 'package:meal_tracker/ui/screens/home/home_view.dart';
+import 'package:provider/provider.dart';
+import 'package:provider/single_child_widget.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const AppNameApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class AppNameApp extends StatelessWidget {
+  const AppNameApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    return MultiProvider(
+      providers: [..._services],
+      builder: (context, child) {
+        final isAuthorized = context.select((DIManager diManager) => diManager.isAuthorized);
+        final defaultRoute = isAuthorized ? const HomeView() : const AuthView();
+        return MaterialApp(theme: ThemeData.dark(useMaterial3: true), debugShowCheckedModeBanner: false, home: defaultRoute);
+      },
     );
   }
-}
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.inversePrimary, title: Text(widget.title)),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text('$_counter', style: Theme.of(context).textTheme.headlineMedium),
-          ],
-        ),
+  List<SingleChildWidget> get _services {
+    final localRepository = LocalRepository();
+    final remoteRepo = RestRepository(config: _config);
+    return [
+      Provider<RestRepository>(create: (context) => remoteRepo),
+      Provider<LocalRepository>(create: (context) => localRepository),
+      ChangeNotifierProvider(
+        create: (context) {
+          return DIManager(localRepository: localRepository, remoteRepository: remoteRepo);
+        },
       ),
-      floatingActionButton: FloatingActionButton(onPressed: _incrementCounter, tooltip: 'Increment', child: const Icon(Icons.add)),
-    );
+    ];
   }
+
+  EnvironmentModel get _config => EnvironmentModel.test();
 }
